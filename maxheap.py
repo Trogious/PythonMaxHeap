@@ -27,8 +27,8 @@ class MaxHeap:
 
     def _remove(self, i):
         item = self.h[i]
-        if i < len(self.h)-1:
-            self._swap(i, len(self.h)-1)
+        if i < self._size-1:
+            self._swap(i, self._size-1)
             self.h.pop()
             self._size -= 1
             self._heapify(i)
