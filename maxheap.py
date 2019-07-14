@@ -6,16 +6,27 @@ class MaxHeap:
         self._size = 0
 
     def empty(self):
-        return len(self.h) < 1
+        return self._size < 1
+
+    def size(self):
+        return self._size
+
+    def peek(self):
+        return self.h[0]
 
     def push(self, item):
-        self.h.append(item)
-        self._size += 1
-        i = self._size-1
-        while self.h[i] > self.h[MaxHeap._parent(i)]:
-            self._swap(i, MaxHeap._parent(i))
-            i = MaxHeap._parent(i)
-        self._positions[item] = i
+        try:
+            exists = item in self._positions
+        except KeyError:
+            exists = False
+        if not exists:  # do not allow duplicates
+            self.h.append(item)
+            self._size += 1
+            i = self._size-1
+            self._add_position(item, i)
+            while self.h[i] > self.h[MaxHeap._parent(i)]:
+                self._swap(i, MaxHeap._parent(i))
+                i = MaxHeap._parent(i)
 
     def pop(self):
         top = self.h[0]
@@ -35,10 +46,13 @@ class MaxHeap:
         else:
             self.h.pop()
             self._size -= 1
+        self._remove_position(item)
+
+    def _remove_position(self, item):
         del self._positions[item]
 
-    def peek(self):
-        return self.h[0]
+    def _add_position(self, item, i):
+        self._positions[item] = i
 
     def _index(self, item):
         return self._positions[item]
@@ -60,12 +74,14 @@ class MaxHeap:
                     self._heapify(left)
 
     def _swap(self, i, j):
+        assert (self.h[i] != self.h[j]), 'h[i]==h[j]'
+        # print('swap: %s <-> %s' % (self._positions[self.h[i]], self._positions[self.h[j]]))
         self._positions[self.h[i]], self._positions[self.h[j]] = j, i
+        # print('swapped: %s <-> %s' % (self._positions[self.h[i]], self._positions[self.h[j]]))
         self.h[i], self.h[j] = self.h[j], self.h[i]
 
     def _is_leaf(self, i):
-        size = len(self.h)
-        return i >= (size / 2) and i <= size
+        return i >= (self._size / 2) and i <= self._size
 
     def _print_pos(self):
         pos = ''
@@ -89,24 +105,43 @@ class MaxHeap:
 def test_remove(mh, x):
     import sys
     sys.stdout.write('removing: %d, %s -> ' % (x, str(mh.h)))
-    # pos = mh._print_pos()
+    pos = mh._print_pos()
     mh.remove(x)
     print(mh.h)
-    # print(pos)
+    print(pos)
 
 
-mh = MaxHeap()
-for x in [30, 10, 5, 4, 3, 32, 21]:
-    mh.push(x)
-test_remove(mh, 3)
-test_remove(mh, 32)
-test_remove(mh, 5)
-test_remove(mh, 4)
-test_remove(mh, 30)
-for x in [12, 43, 15]:
-    mh.push(x)
-test_remove(mh, 10)
-test_remove(mh, 21)
-test_remove(mh, 43)
-test_remove(mh, 15)
-test_remove(mh, 12)
+if __name__ == '__main__':
+    mh = MaxHeap()
+    for x in [30, 10, 5, 4, 3, 32, 21]:
+        mh.push(x)
+    print('REMOVING START 1')
+    test_remove(mh, 3)
+    test_remove(mh, 32)
+    test_remove(mh, 5)
+    test_remove(mh, 4)
+    test_remove(mh, 30)
+    for x in [12, 43, 15]:
+        mh.push(x)
+    print('REMOVING START 2')
+    test_remove(mh, 10)
+    test_remove(mh, 21)
+    test_remove(mh, 43)
+    test_remove(mh, 15)
+    test_remove(mh, 12)
+    print(mh._print_pos())
+    for x in [20, 20, 21, 20]:
+        mh.push(x)
+    print(mh._print_pos())
+    print('REMOVING START 3')
+    test_remove(mh, 20)
+    try:
+        test_remove(mh, 20)
+        test_remove(mh, 20)
+    except KeyError:
+        pass
+    test_remove(mh, 21)
+    for x in [30, 5, 10, 5]:
+        mh.push(x)
+    print(mh.h)
+    test_remove(mh, 30)
